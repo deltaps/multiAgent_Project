@@ -1,0 +1,2 @@
+java -cp ".:../lib/jade.jar" jade.Boot -gui -agents 'bob:playerAgent;alice:playerAgent'
+javac -cp "./lib/jade.jar" src/*.java -d ./build
