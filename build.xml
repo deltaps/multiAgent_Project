@@ -13,7 +13,7 @@
         <pathelement location="${projet.build.dir}" />
     </path>
 
-    <target name="compile" depends="prepare" description="Compilation des classes">
+    <target name="compile" depends="init,prepare" description="Compilation des classes">
         <javac srcdir="${projet.src.dir}" destdir="${projet.build.dir}" debug="on" optimize="off" deprecation="on" includeantruntime="false">
             <classpath refid="projet.classpath"/>
         </javac>
@@ -31,6 +31,12 @@
     <target name="prepare">
         <mkdir dir="${projet.dist.dir}"/>
         <mkdir dir="${projet.build.dir}"/>
+    </target>
+
+    <target name="init">
+        <echo message="Initialisation de ${ant.project.name}"/>
+        <delete dir="${basedir}/build"/>
+        <mkdir dir="${basedir}/build"/>
     </target>
 
 </project>
