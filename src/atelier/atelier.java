@@ -20,5 +20,9 @@ public class atelier extends Agent {
         this.produits.add(p4);
 
         //On envoie un message a un robot par compétence en leur informant qu'il sont responsable d'une compétence.
+        for(String competence : List.of("souder", "peindre", "assembler")){
+            //On envoie un message au robot qui a la compétence
+
+        }
     }
 }

@@ -1,6 +1,9 @@
 package atelier;
 
 import jade.core.Agent;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,6 +20,15 @@ public class robot extends Agent {
             if(rand == 1){
                 competences.put(comp, (float) Math.random());
             }
+        }
+
+        //Ajouter une description a l'agent pour chacun de ces comportements
+        DFAgentDescription template = new DFAgentDescription();
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("Competence");
+        for(String comp : competences.keySet()){
+            sd.setName(comp);
+            template.addServices(sd);
         }
         // ----------------------------------------------------------------
 

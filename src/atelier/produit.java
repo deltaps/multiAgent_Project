@@ -1,5 +1,6 @@
 package atelier;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class produit {
@@ -7,11 +8,13 @@ public class produit {
     private String name;
     private boolean free;//Est-ce que le produit est en cours de fabrication
     private boolean done;//Est-ce que le produit est fini
-    private List<String> skills;//Liste des compétences nécessaires pour fabriquer le produit
+    private HashMap<String,Boolean> skills;//Liste des compétences nécessaires pour fabriquer le produit
 
     public produit(String name,List<String> skills){
         this.name = name;
-        this.skills = skills;
+        for(String skill : skills){
+            this.skills.put(skill, false);
+        }
         this.free = true;
         this.done = false;
     }
@@ -25,6 +28,12 @@ public class produit {
     }
 
     public boolean isDone() {
+        for (String skill : skills.keySet()) {
+            if(!skills.get(skill)){
+                return false;
+            }
+        }
+        this.done = true;
         return done;
     }
 
@@ -32,11 +41,11 @@ public class produit {
         this.done = done;
     }
 
-    public List<String> getSkills() {
+    public HashMap<String,Boolean> getSkills() {
         return skills;
     }
 
-    public void setSkills(List<String> skills) {
+    public void setSkills(HashMap<String,Boolean> skills) {
         this.skills = skills;
     }
 
