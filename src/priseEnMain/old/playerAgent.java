@@ -1,15 +1,11 @@
-package old;
+package priseEnMain.old;
 
 import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.core.AID;
 import jade.domain.*;
 import jade.domain.FIPAAgentManagement.*;
-import jade.util.leap.ArrayList;
-import jade.util.leap.Iterator;
 import jade.lang.acl.ACLMessage;
-
-import java.lang.reflect.Array;
 
 public class playerAgent extends Agent{
 

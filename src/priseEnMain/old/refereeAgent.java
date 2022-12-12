@@ -1,11 +1,10 @@
-package old;
+package priseEnMain.old;
 
 import jade.core.Agent;
 import jade.core.behaviours.*;
-import jade.core.AID;
 import jade.domain.*;
 import jade.domain.FIPAAgentManagement.*;
-import jade.lang.acl.ACLMessage;import jade.util.leap.ArrayList;
+import jade.lang.acl.ACLMessage;
 import jade.util.leap.Iterator;
 
 
