@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
-public class produit {
+public class produit implements Serializable {
 
     private String name;
     private boolean free;//Est-ce que le produit est en cours de fabrication
@@ -54,5 +55,9 @@ public class produit {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void finishSkill(String skill){
+        this.skills.put(skill, true);
     }
 }
