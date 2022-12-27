@@ -2,7 +2,6 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -35,7 +34,7 @@ public class robot extends Agent {
                 this.competences.put(comp, (float) Math.random());
             }
         }
-
+        System.out.println("Robot " + this.getAID().getLocalName() + " a les compétences : " + this.competences.toString());
         /*
         System.out.println("Agent "+getAID().getName()+" has the following competences :");
         for(String comp : this.competences.keySet()){
@@ -57,9 +56,9 @@ public class robot extends Agent {
         }
         // ----------------------------------------------------------------
 
-        //On récupère le temps de fabrication d'un produit dans le fichier data.txt du dossier data ----
+        //On récupère le temps de fabrication d'un produit dans le fichier configuration.txt du dossier data ----
         try {
-            FileReader fr = new FileReader("../data/data.txt");
+            FileReader fr = new FileReader("../configurations/configuration.txt");
             BufferedReader br = new BufferedReader(fr);
             String ligne;
             while ((ligne = br.readLine()) != null) {
@@ -69,7 +68,6 @@ public class robot extends Agent {
                 if(key.equals("timeSkill")){
                     this.time = Double.parseDouble(value);
                 }
-                System.out.println(this.time);
             }
             br.close();
         } catch (FileNotFoundException e) {
@@ -134,27 +132,25 @@ public class robot extends Agent {
             if(msg != null){
                 System.out.println("Agent "+getAID().getName()+" received a message from "+msg.getSender().getName());
                 //Si la pile des produit est supérieur à trois, on répond que l'on ne peux pas prendre le produit
-                if(msg.getContent().equals("newProduct")){
-                    if(produits.size() > 3){
-                        System.out.println("Agent "+getAID().getName()+" can't take the product because it has already 3 products to do");
+                if(produits.size() >= 3){
+                    System.out.println("Agent "+getAID().getName()+" can't take the product because it has already 3 products to do");
+                    ACLMessage reply = msg.createReply();
+                    reply.setPerformative(ACLMessage.REFUSE);
+                    reply.setContent("I can't take this product");
+                    send(reply);
+                }
+                else{
+                    try {
+                        System.out.println("Agent "+getAID().getName()+" is taking the product");
+                        produit p = (produit) msg.getContentObject();
+                        produits.add(p);
+                        //Envoie un message acceptant le produit
                         ACLMessage reply = msg.createReply();
-                        reply.setPerformative(ACLMessage.REFUSE);
-                        reply.setContent("I can't take this product");
+                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                        reply.setContent("I can take this product");
                         send(reply);
-                    }
-                    else{
-                        try {
-                            System.out.println("Agent "+getAID().getName()+" is taking the product");
-                            produit p = (produit) msg.getContentObject();
-                            produits.add(p);
-                            //Envoie un message acceptant le produit
-                            ACLMessage reply = msg.createReply();
-                            reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                            reply.setContent("I can take this product");
-                            send(reply);
-                        } catch (UnreadableException e) {
-                            throw new RuntimeException(e);
-                        }
+                    } catch (UnreadableException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
