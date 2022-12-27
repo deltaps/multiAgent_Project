@@ -1,7 +1,7 @@
-package atelier;
 
 import jade.core.Agent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class atelier extends Agent {
@@ -14,15 +14,17 @@ public class atelier extends Agent {
         produit p2 = new produit("p2",List.of("assembler", "peindre"));
         produit p3 = new produit("p3",List.of("assembler"));
         produit p4 = new produit("p4",List.of("assembler", "souder", "peindre"));
+        this.produits = new ArrayList<>();
         this.produits.add(p1);
         this.produits.add(p2);
         this.produits.add(p3);
         this.produits.add(p4);
 
         //On envoie un message a un robot par compétence en leur informant qu'il sont responsable d'une compétence.
+        /* TODO : déléger les tâches pour ne pas surcharger l'atelier
         for(String competence : List.of("souder", "peindre", "assembler")){
             //On envoie un message au robot qui a la compétence
 
-        }
+        } */
     }
 }

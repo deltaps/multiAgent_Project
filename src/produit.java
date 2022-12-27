@@ -1,5 +1,3 @@
-package atelier;
-
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,6 +10,7 @@ public class produit {
 
     public produit(String name,List<String> skills){
         this.name = name;
+        this.skills = new HashMap<>();
         for(String skill : skills){
             this.skills.put(skill, false);
         }

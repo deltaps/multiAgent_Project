@@ -1,5 +1,3 @@
-package atelier;
-
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -15,10 +13,11 @@ public class robot extends Agent {
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
         //Assigner aléatoirement des compétences au robot --------------------
         List<String> allCompetences = List.of("souder", "peindre", "assembler");
+        this.competences = new HashMap<>();
         for(String comp : allCompetences){
             int rand = (int)(Math.random() * 2) + 1;
             if(rand == 1){
-                competences.put(comp, (float) Math.random());
+                this.competences.put(comp, (float) Math.random());
             }
         }
 
