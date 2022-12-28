@@ -77,6 +77,7 @@ public class robot extends Agent {
         }
         // --------------------------------------------------------------------------------------------------
         this.addBehaviour(new receptionMessage()); // Ajout du comportement de réception des messages
+        this.addBehaviour(new applySkills(this, 1000));
     }
 
     private class applySkills extends TickerBehaviour {
@@ -90,7 +91,7 @@ public class robot extends Agent {
         protected void onTick() {
             if(produits.size() > 0){
                 produit p = produits.get(0);
-                for(String comp : p.getSkills().keySet()){
+                for(String comp : p.getSkills().keySet()){ // On vas faire le maximum de compétence possible pour le produit
                     if(p.getSkills().get(comp)){ // Si la compétence à déjà été appliqué
                         continue;
                     }
@@ -114,13 +115,15 @@ public class robot extends Agent {
                 }
                 //Envoie le produit par message a l'atelier
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-                message.addReceiver(new AID("bob", AID.ISLOCALNAME));
+                message.addReceiver(new AID("eva", AID.ISLOCALNAME));
                 try {
                     message.setContentObject(p);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                send(message);
                 produits.remove(0);
+                System.out.println("Agent "+getAID().getName()+" has sent the product "+p.getName()+" to the workshop");
             }
         }
     }
@@ -134,9 +137,19 @@ public class robot extends Agent {
                 //Si la pile des produit est supérieur à trois, on répond que l'on ne peux pas prendre le produit
                 if(produits.size() >= 3){
                     System.out.println("Agent "+getAID().getName()+" can't take the product because it has already 3 products to do");
-                    ACLMessage reply = msg.createReply();
-                    reply.setPerformative(ACLMessage.REFUSE);
-                    reply.setContent("I can't take this product");
+                    produit p = null;
+                    try {
+                        p = (produit) msg.getContentObject();
+                    } catch (UnreadableException e) {
+                        throw new RuntimeException(e);
+                    }
+                    ACLMessage reply = new ACLMessage(ACLMessage.REFUSE);
+                    reply.addReceiver(new AID("eva", AID.ISLOCALNAME));
+                    try {
+                        reply.setContentObject(p);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     send(reply);
                 }
                 else{
@@ -145,11 +158,13 @@ public class robot extends Agent {
                         produit p = (produit) msg.getContentObject();
                         produits.add(p);
                         //Envoie un message acceptant le produit
-                        ACLMessage reply = msg.createReply();
-                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                        reply.setContent("I can take this product");
+                        ACLMessage reply = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+                        reply.addReceiver(new AID("eva", AID.ISLOCALNAME));
+                        reply.setContentObject(p);
                         send(reply);
                     } catch (UnreadableException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
