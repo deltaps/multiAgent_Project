@@ -4,7 +4,6 @@
     <property name="projet.src.dir" value="src"/>
     <property name="projet.build.dir" value="${basedir}/build"/>
     <property name="projet.lib.dir" value="lib"/>
-    <property name="projet.dist.dir" value="${basedir}/dist"/>
 
     <path id="projet.classpath">
         <fileset dir="${projet.lib.dir}">
@@ -19,17 +18,7 @@
         </javac>
     </target>
 
-    <target name="javadoc">
-        <javadoc sourcepath="src" destdir="${projet.dist.dir}/doc" >
-            <fileset dir="src" defaultexcludes="yes">
-                <include name="**" />
-            </fileset>
-        </javadoc>
-    </target>
-
-
     <target name="prepare">
-        <mkdir dir="${projet.dist.dir}"/>
         <mkdir dir="${projet.build.dir}"/>
     </target>
 
@@ -38,5 +27,6 @@
         <delete dir="${basedir}/build"/>
         <mkdir dir="${basedir}/build"/>
     </target>
+
 
 </project>

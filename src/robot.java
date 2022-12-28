@@ -10,7 +10,6 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,9 +23,34 @@ public class robot extends Agent {
     private double time;//Temps que l'agent doit passé à faire un produit.
     protected void setup(){
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
+
+        //On récupère le temps de fabrication d'un produit, ainsi que les différentes compétences dans le fichier configuration.txt du dossier data ----
+        List<String> allCompetences = new ArrayList<>();
+        try {
+            FileReader fr = new FileReader("../configurations/configuration.txt");
+            BufferedReader br = new BufferedReader(fr);
+            String ligne;
+            while ((ligne = br.readLine()) != null) {
+                int index = ligne.indexOf("=");
+                String key = (ligne.substring(0, index)).trim();
+                String value = (ligne.substring(index + 1)).trim();
+                if(key.equals("timeSkill")){
+                    this.time = Double.parseDouble(value);
+                }
+                if(key.equals("competences")){
+                    String[] competencesList = value.split(",");
+                    for (String s : competencesList) {
+                        allCompetences.add(s.trim());
+                    }
+                }
+            }
+            br.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        // --------------------------------------------------------------------------------------------------
         this.produits = new ArrayList<>();
         //Assigner aléatoirement des compétences au robot --------------------
-        List<String> allCompetences = List.of("souder", "peindre", "assembler");
         this.competences = new HashMap<>();
         for(String comp : allCompetences){
             int rand = (int)(Math.random() * 2) + 1;
@@ -35,11 +59,6 @@ public class robot extends Agent {
             }
         }
         System.out.println("Robot " + this.getAID().getLocalName() + " a les compétences : " + this.competences.toString());
-        /*
-        System.out.println("Agent "+getAID().getName()+" has the following competences :");
-        for(String comp : this.competences.keySet()){
-            System.out.println(comp+" : "+this.competences.get(comp));
-        } */
 
         //Ajouter une description a l'agent pour chacun de ces comportements
         DFAgentDescription template = new DFAgentDescription();
@@ -56,35 +75,13 @@ public class robot extends Agent {
         }
         // ----------------------------------------------------------------
 
-        //On récupère le temps de fabrication d'un produit dans le fichier configuration.txt du dossier data ----
-        try {
-            FileReader fr = new FileReader("../configurations/configuration.txt");
-            BufferedReader br = new BufferedReader(fr);
-            String ligne;
-            while ((ligne = br.readLine()) != null) {
-                int index = ligne.indexOf("=");
-                String key = (ligne.substring(0, index)).trim();
-                String value = (ligne.substring(index + 1)).trim();
-                if(key.equals("timeSkill")){
-                    this.time = Double.parseDouble(value);
-                }
-            }
-            br.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        // --------------------------------------------------------------------------------------------------
         this.addBehaviour(new receptionMessage()); // Ajout du comportement de réception des messages
         this.addBehaviour(new applySkills(this, 1000));
     }
 
     private class applySkills extends TickerBehaviour {
-        private Agent a;
         public applySkills(Agent a, long period) {
             super(a, period);
-            this.a = a;
         }
 
         @Override
@@ -99,7 +96,7 @@ public class robot extends Agent {
                         System.out.println("Agent "+getAID().getName()+" is applying the competence "+comp+" on the product "+p.getName());
                         //On attend le temps de fabrication d'un produit plus ou moins aléatoirement en fonction du degré de compétence du robot
                         try {
-                            Thread.sleep((long) (time * (1 - competences.get(comp))));
+                            Thread.sleep((long) (time * (1 - competences.get(comp)))); // Le temps est plus ou moins long en fonction du niveau de compétence du robot
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
@@ -137,7 +134,7 @@ public class robot extends Agent {
                 //Si la pile des produit est supérieur à trois, on répond que l'on ne peux pas prendre le produit
                 if(produits.size() >= 3){
                     System.out.println("Agent "+getAID().getName()+" can't take the product because it has already 3 products to do");
-                    produit p = null;
+                    produit p;
                     try {
                         p = (produit) msg.getContentObject();
                     } catch (UnreadableException e) {
@@ -162,9 +159,7 @@ public class robot extends Agent {
                         reply.addReceiver(new AID("eva", AID.ISLOCALNAME));
                         reply.setContentObject(p);
                         send(reply);
-                    } catch (UnreadableException e) {
-                        throw new RuntimeException(e);
-                    } catch (IOException e) {
+                    } catch (UnreadableException | IOException e) {
                         throw new RuntimeException(e);
                     }
                 }

@@ -1,9 +1,7 @@
-
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -11,11 +9,12 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class atelier extends Agent {
 
@@ -26,24 +25,38 @@ public class atelier extends Agent {
     private HashMap<String,Float> agentScores;
     protected void setup(){
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
-        //On crée une liste de produit à fabriquer
-        produit p1 = new produit("p1", List.of("souder", "peindre"));
-        produit p2 = new produit("p2",List.of("assembler", "peindre"));
-        produit p3 = new produit("p3",List.of("assembler"));
-        produit p4 = new produit("p4",List.of("assembler", "souder", "peindre"));
-        produit p5 = new produit("p5",List.of("souder", "peindre"));
-        produit p6 = new produit("p6",List.of("assembler", "souder"));
-        produit p7 = new produit("p7",List.of("souder"));
-        produit p8 = new produit("p8",List.of("peindre"));
+        //On récupère la liste des produit dans le fichier de configuration ---
+        HashMap<String, ArrayList<String>> products = new HashMap<>();
+        try {
+            FileReader fr = new FileReader("../configurations/configuration.txt");
+            BufferedReader br = new BufferedReader(fr);
+            String ligne;
+            while ((ligne = br.readLine()) != null) {
+                int index = ligne.indexOf("=");
+                String key = (ligne.substring(0, index)).trim();
+                String value = (ligne.substring(index + 1));
+                if(key.equals("produit")){
+                    Pattern pattern = Pattern.compile("\\b(\\w+):\\(([^)]+)\\)");
+                    Matcher matcher = pattern.matcher(value);
+                    while(matcher.find()){
+                        String productName = matcher.group(1);
+                        String competencesString = matcher.group(2);
+                        String[] competencesArray = competencesString.split(",");
+                        ArrayList<String> competences = new ArrayList<>(Arrays.asList(competencesArray));
+                        products.put(productName, competences);
+                    }
+                }
+            }
+            br.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        // --------------------------------------------------------------------
+        //On crée une liste de produit à fabriquer en fonction du fichier de configuration ----
         this.produits = new ArrayList<>();
-        this.produits.add(p1);
-        this.produits.add(p2);
-        this.produits.add(p3);
-        this.produits.add(p4);
-        this.produits.add(p5);
-        this.produits.add(p6);
-        this.produits.add(p7);
-        this.produits.add(p8);
+        for(String productName : products.keySet()){
+            this.produits.add(new produit(productName, products.get(productName)));
+        }
         this.nbProduits = this.produits.size();
         this.finishedProduits = new ArrayList<>();
         this.trashProduits = new ArrayList<>();
@@ -144,7 +157,7 @@ public class atelier extends Agent {
             ACLMessage msg = receive();
             if(msg != null){
                 if(msg.getPerformative() == ACLMessage.REFUSE){
-                    produit p = null;
+                    produit p;
                     try {
                         p = (produit) msg.getContentObject();
                     } catch (UnreadableException e) {
@@ -194,7 +207,7 @@ public class atelier extends Agent {
                 else{
                     System.out.println("Agent "+getAID().getName()+" received a message from "+msg.getSender().getName());
                     //On récupère le produit contenue dans le message
-                    produit produit = null;
+                    produit produit;
                     try {
                         produit = (produit) msg.getContentObject();
                     } catch (UnreadableException e) {
