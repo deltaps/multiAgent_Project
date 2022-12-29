@@ -20,7 +20,7 @@ public class robot extends Agent {
 
     private HashMap<String,Float> competences;//Dictionnaire avec en clé le nom de la compétence et en valeur le degrès de la compétence entre 0 et 1.
     private List<produit> produits;//File d'attente des produits que l'agent doit faire.
-    private double time;//Temps que l'agent doit passé à faire un produit.
+    private double time;//Temps que l'agent doit passer à faire un produit.
     protected void setup(){
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
 
@@ -49,7 +49,7 @@ public class robot extends Agent {
             throw new RuntimeException(e);
         }
         // --------------------------------------------------------------------------------------------------
-        this.produits = new ArrayList<>();
+        this.produits = new ArrayList<>(); // Iinitialisation de la file d'attente des produits.
         //Assigner aléatoirement des compétences au robot --------------------
         this.competences = new HashMap<>();
         for(String comp : allCompetences){
@@ -60,7 +60,7 @@ public class robot extends Agent {
         }
         System.out.println("Robot " + this.getAID().getLocalName() + " a les compétences : " + this.competences.toString());
 
-        //Ajouter une description a l'agent pour chacun de ces comportements
+        //Ajouter une description à l'agent pour chacun de ces comportements
         DFAgentDescription template = new DFAgentDescription();
         for(String comp : competences.keySet()){
             ServiceDescription sd = new ServiceDescription();
@@ -76,7 +76,7 @@ public class robot extends Agent {
         // ----------------------------------------------------------------
 
         this.addBehaviour(new receptionMessage()); // Ajout du comportement de réception des messages
-        this.addBehaviour(new applySkills(this, 1000));
+        this.addBehaviour(new applySkills(this, 1000));// Ajout du comportement d'application des compétences pour la liste des produits
     }
 
     private class applySkills extends TickerBehaviour {
@@ -86,15 +86,15 @@ public class robot extends Agent {
 
         @Override
         protected void onTick() {
-            if(produits.size() > 0){
+            if(produits.size() > 0){ // Si l'agent a des produits à faire
                 produit p = produits.get(0);
-                for(String comp : p.getSkills().keySet()){ // On vas faire le maximum de compétence possible pour le produit
-                    if(p.getSkills().get(comp)){ // Si la compétence à déjà été appliqué
+                for(String comp : p.getSkills().keySet()){ // On va faire le maximum de compétence possible pour le produit, donc on boucle sur toutes les compétences du produit
+                    if(p.getSkills().get(comp)){ // Si la compétence a déjà été appliqué, on passe à la suivante
                         continue;
                     }
                     if(competences.containsKey(comp)){ // Si le robot a la compétence nécessaire
                         System.out.println("Agent "+getAID().getName()+" is applying the competence "+comp+" on the product "+p.getName());
-                        //On attend le temps de fabrication d'un produit plus ou moins aléatoirement en fonction du degré de compétence du robot
+                        //On attend le temps de fabrication d'un produit plus ou moins longtemps en fonction du degré de compétence du robot
                         try {
                             Thread.sleep((long) (time * (1 - competences.get(comp)))); // Le temps est plus ou moins long en fonction du niveau de compétence du robot
                         } catch (InterruptedException e) {
@@ -103,14 +103,14 @@ public class robot extends Agent {
                         p.finishSkill(comp);//On indique que la compétence a été appliqué
                     }
                 }
-                //A partir d'ici, soit le produit est entiérement fabriqué, soit il l'est partiellement, il faut donc informé et renvoyé le produit a l'atelier
+                //À partir d'ici, soit le produit est entièrement fabriqué, soit il l'est partiellement, il faut donc informer et renvoyé le produit à l'atelier
                 if(p.isDone()){
                     System.out.println("Agent "+getAID().getName()+" has finished the product "+p.getName());
                 }
                 else{
                     System.out.println("Agent "+getAID().getName()+" has partially finished the product "+p.getName());
                 }
-                //Envoie le produit par message a l'atelier
+                //Envoie le produit par message à l'atelier
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                 message.addReceiver(new AID("eva", AID.ISLOCALNAME));
                 try {
@@ -119,7 +119,7 @@ public class robot extends Agent {
                     throw new RuntimeException(e);
                 }
                 send(message);
-                produits.remove(0);
+                produits.remove(0);//On retire le produit de la file d'attente
                 System.out.println("Agent "+getAID().getName()+" has sent the product "+p.getName()+" to the workshop");
             }
         }
@@ -129,9 +129,9 @@ public class robot extends Agent {
         @Override
         public void action() {
             ACLMessage msg = receive();
-            if(msg != null){
+            if(msg != null){ // Le robot ne peut recevoir qu'un type de message de l'atelier, ce message est une demande de produit
                 System.out.println("Agent "+getAID().getName()+" received a message from "+msg.getSender().getName());
-                //Si la pile des produit est supérieur à trois, on répond que l'on ne peux pas prendre le produit
+                //Si la pile des produits est supérieure à trois, on répond que l'on ne peut pas prendre le produit
                 if(produits.size() >= 3){
                     System.out.println("Agent "+getAID().getName()+" can't take the product because it has already 3 products to do");
                     produit p;
@@ -140,20 +140,20 @@ public class robot extends Agent {
                     } catch (UnreadableException e) {
                         throw new RuntimeException(e);
                     }
-                    ACLMessage reply = new ACLMessage(ACLMessage.REFUSE);
+                    ACLMessage reply = new ACLMessage(ACLMessage.REFUSE); // On envoie un message de refus
                     reply.addReceiver(new AID("eva", AID.ISLOCALNAME));
                     try {
-                        reply.setContentObject(p);
+                        reply.setContentObject(p);//On ajoute le produit à refuser
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     send(reply);
                 }
-                else{
+                else{ // Si le robot peut prendre le produit
                     try {
                         System.out.println("Agent "+getAID().getName()+" is taking the product");
                         produit p = (produit) msg.getContentObject();
-                        produits.add(p);
+                        produits.add(p); // On ajoute le produit à la file d'attente
                         //Envoie un message acceptant le produit
                         ACLMessage reply = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                         reply.addReceiver(new AID("eva", AID.ISLOCALNAME));

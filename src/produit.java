@@ -27,7 +27,7 @@ public class produit implements Serializable {
         this.free = free;
     }
 
-    public boolean isDone() {
+    public boolean isDone() {// Le produit est fini si toutes les compétences sont terminées
         for (String skill : skills.keySet()) {
             if(!skills.get(skill)){
                 return false;
