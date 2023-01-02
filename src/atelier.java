@@ -1,6 +1,7 @@
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -232,6 +233,10 @@ public class atelier extends Agent {
                 }
             }
         }
+    }
+
+    protected void takeDown(){
+        System.out.println("Agent "+getAID().getName()+" terminating.");
     }
 
 }

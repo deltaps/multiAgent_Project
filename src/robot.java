@@ -166,4 +166,7 @@ public class robot extends Agent {
             }
         }
     }
+    protected void takeDown(){
+        System.out.println("Agent "+getAID().getName()+" terminating.");
+    }
 }
