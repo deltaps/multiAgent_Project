@@ -22,7 +22,7 @@ public class atelier extends Agent {
     private List<produit> finishedProduits;
     private List<produit> trashProduits;
     private int nbProduits;
-    private HashMap<String,Float> agentScores;
+    private HashMap<String,HashMap<String,Float>> agentScores;
     protected void setup(){
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
         //On récupère la liste des produit dans le fichier de configuration ---
@@ -76,7 +76,7 @@ public class atelier extends Agent {
         }
 
         protected void onTick() {
-            if(produits.size() > 0 && agentScores.size() == 0){
+            if(produits.size() > 0){
                 produit p = produits.get(0);
                 HashMap<String,Float> agentsScore = new HashMap<>();
                 DFAgentDescription template1 = new DFAgentDescription();
@@ -104,7 +104,7 @@ public class atelier extends Agent {
                     produits.remove(p);
                 }
                 else{
-                    agentScores = agentsScore;
+                    agentScores.put(p.getName(), agentsScore);
                     //On regarde le robot qui est le plus apt a faire le produit
                     String sendAgent = "";
                     float maxScore = 0.0f;
@@ -116,6 +116,7 @@ public class atelier extends Agent {
                     }
                     agentsScore.remove(sendAgent);
                     agentScores.remove(sendAgent);
+                    produits.remove(p);
                     //On envoie le message à l'agent
                     ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                     message.addReceiver(new AID(sendAgent, AID.ISLOCALNAME));
@@ -167,9 +168,9 @@ public class atelier extends Agent {
                     //On récupère l'agent avec le meilleur score
                     String sendAgent = "";
                     float maxScore = 0.0f;
-                    for(String agent : agentScores.keySet()){
-                        if(agentScores.get(agent) > maxScore){
-                            maxScore = agentScores.get(agent);
+                    for(String agent : agentScores.get(p.getName()).keySet()){
+                        if(agentScores.get(p.getName()).get(agent) > maxScore){
+                            maxScore = agentScores.get(p.getName()).get(agent);
                             sendAgent = agent;
                         }
                     }
@@ -182,13 +183,14 @@ public class atelier extends Agent {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        agentScores.remove(sendAgent);
+                        agentScores.remove(p.getName());
                         System.out.println("Envoi du produit "+p.getName()+" à l'agent "+sendAgent);
                         this.a.send(message);
                     }
                     else{
                         System.out.println("Aucun agent n'a pu prendre le produit "+p.getName());
-                        agentScores.clear();
+                        agentScores.remove(p.getName());
+                        produits.add(p);
                     }
                 }
                 else if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL){
@@ -199,10 +201,10 @@ public class atelier extends Agent {
                         throw new RuntimeException(e);
                     }
                     System.out.println("Agent "+this.a.getLocalName()+" l'agent "+msg.getSender().getLocalName()+ " a accepté de fabriquer le produit "+p.getName());
-                    if(produits.size() != 0){
-                        produits.remove(0);
-                    }
-                    agentScores.clear();
+                    //if(produits.size() != 0){
+                        //produits.remove(0);
+                    //}
+                    agentScores.remove(p.getName());
                 }
                 else{
                     System.out.println("Agent "+getAID().getName()+" received a message from "+msg.getSender().getName());

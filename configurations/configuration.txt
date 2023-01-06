@@ -1,3 +1,4 @@
 timeSkill = 500.0
 competences = souder, peindre, assembler
 produit = {produit1:(souder,peindre);produit2:(assembler,peindre);produit3:(souder,assembler);produit4:(souder,peindre,assembler);produit5:(souder);produit6:(peindre);produit7:(assembler)}
+commentaire = Il est important que chaque produit possède un nom différent.
