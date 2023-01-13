@@ -1,7 +1,6 @@
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -22,8 +21,8 @@ public class atelier extends Agent {
     private List<produit> produits; //Liste des produits de l'atelier
     private List<produit> finishedProduits; //Liste des produits finis de l'atelier
     private List<produit> trashProduits; //Liste des produits non finisable de l'atelier
-    private int nbProduits;//Nombre de produits de l'atelier
-    private HashMap<String,Float> agentScores;//Liste des scores des robot en fonction d'un produit
+    private int nbProduits; //Nombre de produits de l'atelier
+    private HashMap<String,HashMap<String,Float>> agentScores; //Liste des scores des robot en fonction des produits
     protected void setup(){
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
         //On récupère la liste des produit dans le fichier de configuration ---
@@ -82,7 +81,7 @@ public class atelier extends Agent {
         }
 
         protected void onTick() {
-            if(produits.size() > 0 && agentScores.size() == 0){ // On vérifie si il y a des produits à fabriquer, et si l'atelier n'a pas déjà envoyé une demande
+            if(produits.size() > 0){ // On vérifie si il y a des produits à fabriquer
                 produit p = produits.get(0); // Produit à fabriquer
                 //Création des scores des robots en fonction du produit à fabriquer ---
                 HashMap<String,Float> agentsScore = new HashMap<>();
@@ -111,7 +110,7 @@ public class atelier extends Agent {
                     produits.remove(p);
                 }
                 else{
-                    agentScores = agentsScore;
+                    agentScores.put(p.getName(), agentsScore);
                     //On regarde le robot qui est le plus apt a faire le produit
                     String sendAgent = "";
                     float maxScore = 0.0f;
@@ -123,6 +122,7 @@ public class atelier extends Agent {
                     }
                     agentsScore.remove(sendAgent);
                     agentScores.remove(sendAgent);
+                    produits.remove(p);
                     //On envoie le message à l'agent
                     ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                     message.addReceiver(new AID(sendAgent, AID.ISLOCALNAME));
@@ -175,9 +175,9 @@ public class atelier extends Agent {
                     //On récupère l'agent avec le meilleur score
                     String sendAgent = "";
                     float maxScore = 0.0f;
-                    for(String agent : agentScores.keySet()){
-                        if(agentScores.get(agent) > maxScore){
-                            maxScore = agentScores.get(agent); // On récupère le prochain agent avec le meilleur score pour lui faire une demande
+                    for(String agent : agentScores.get(p.getName()).keySet()){
+                        if(agentScores.get(p.getName()).get(agent) > maxScore){
+                            maxScore = agentScores.get(p.getName()).get(agent); // On récupère le prochain agent avec le meilleur score pour lui faire une demande
                             sendAgent = agent;
                         }
                     }
@@ -190,13 +190,14 @@ public class atelier extends Agent {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        agentScores.remove(sendAgent);
+                        agentScores.remove(p.getName());
                         System.out.println("Envoi du produit "+p.getName()+" à l'agent "+sendAgent);
                         this.a.send(message);
                     }
                     else{
                         System.out.println("Aucun agent n'a pu prendre le produit "+p.getName());
-                        agentScores.clear();
+                        agentScores.remove(p.getName());
+                        produits.add(p);
                     }
                 }
                 else if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL){ // Si le message est une acceptation
@@ -207,10 +208,7 @@ public class atelier extends Agent {
                         throw new RuntimeException(e);
                     }
                     System.out.println("Agent "+this.a.getLocalName()+" l'agent "+msg.getSender().getLocalName()+ " a accepté de fabriquer le produit "+p.getName());
-                    if(produits.size() != 0){
-                        produits.remove(0); // On retire le produit de la liste des produits à fabriquer
-                    }
-                    agentScores.clear();// On vide la liste des agents avec leur score pour ce produit, maintenant l'atelier va pouvoir de nouveau faire des demandes pour de nouveau produites.
+                    agentScores.remove(p.getName());
                 }
                 else{ // Si le message est une fin de fabrication
                     System.out.println("Agent "+getAID().getName()+" received a message from "+msg.getSender().getName());

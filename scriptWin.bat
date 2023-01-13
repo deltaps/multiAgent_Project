@@ -5,5 +5,5 @@ call ant -q
 echo Exécution de la commande 'cd build'...
 cd build
 echo Exécution de la commande 'java -cp '.;..\lib\jade.jar' jade.Boot -agents 'eva:atelier;bob:robot;jean:robot;marc:robot'...
-java -cp ".;..\lib\jade.jar" jade.Boot -agents "eva:atelier;bob:robot;jean:robot;marc:robot"
+java -cp ".;..\lib\jade.jar" jade.Boot -agents "eva:atelier;bob:robot;jean:robot;marc:robot;marc:robot;kevin:robot"
 echo Fin du script.
