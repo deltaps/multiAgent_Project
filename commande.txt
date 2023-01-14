@@ -1,8 +1,0 @@
-java -cp ".:../lib/jade.jar" jade.Boot  -agents 'bob:priseEnMain.old.priseEnMain.refereeAgent;alice:priseEnMain.playerAgent'
-javac -cp "./lib/jade.jar" src/*.java -d ./build
-
-java -cp '.;.\lib\jade.jar;.\build\atelier\' jade.Boot -gui -agents 'bob:robot'
-java -cp '.;..\lib\jade.jar' jade.Boot -gui -agents 'bob:robot'
-
-java -cp '.;..\lib\jade.jar' jade.Boot -agents 'eva:atelier;bob:robot;jean:robot;marc:robot;lol:robot;ozeinfg:robot'
-
