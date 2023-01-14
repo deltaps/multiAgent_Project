@@ -14,6 +14,8 @@ Le fichier de configuration est un fichier texte contenant les informations suiv
 
 ## Lancement du projet
 Pour lancer le projet, il vous suffit de lancer le script 'run.sh' situé à la racine du projet.
+Il est possible que vous deviez modifier les droits d'exécution du script avec la commande suivante :
+```sudo chmod +x run.sh```
 Le script vous demandera le nombre de robots que vous souhaitez créer, ainsi que le nom de chaque robot.
 Il est indispensable d'avoir ant pour pouvoir lancer le projet.
 Si vous voulez lancer le projet avec windows, un fichier scriptWin.bat est aussi à disposition.

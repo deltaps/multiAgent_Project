@@ -22,10 +22,10 @@ public class atelier extends Agent {
     private List<produit> finishedProduits; //Liste des produits finis de l'atelier
     private List<produit> trashProduits; //Liste des produits non finisable de l'atelier
     private int nbProduits; //Nombre de produits de l'atelier
-    private HashMap<String,HashMap<String,Float>> agentScores; //Liste des scores des robot en fonction des produits
+    private HashMap<String,HashMap<String,Float>> agentScores; //Liste des scores des robots en fonction des produits
     protected void setup(){
         System.out.println("Hello! Agent "+getAID().getName()+" is ready.");
-        //On récupère la liste des produit dans le fichier de configuration ---
+        //On récupère la liste des produits dans le fichier de configuration ---
         HashMap<String, ArrayList<String>> products = new HashMap<>();
         try {
             FileReader fr = new FileReader("../configurations/configuration.txt");
@@ -64,7 +64,6 @@ public class atelier extends Agent {
         this.trashProduits = new ArrayList<>();
         this.agentScores = new HashMap<>();
         //-------------------------------------------
-
         //Comportements -----------------------------
         //Comportement qui envoie les produits au robot de manière intelligent
         this.addBehaviour(new sendProduct(this, 100));
@@ -81,7 +80,7 @@ public class atelier extends Agent {
         }
 
         protected void onTick() {
-            if(produits.size() > 0){ // On vérifie si il y a des produits à fabriquer
+            if(produits.size() > 0){ // On vérifie s'il y a des produits à fabriquer
                 produit p = produits.get(0); // Produit à fabriquer
                 //Création des scores des robots en fonction du produit à fabriquer ---
                 HashMap<String,Float> agentsScore = new HashMap<>();
@@ -106,12 +105,12 @@ public class atelier extends Agent {
                 //--------------------------------------------------------------------
                 if(agentsScore.size() == 0) { // Dans ce cas aucun agent ne peut faire le produit
                     System.out.println("Aucun agent ne peut effectuer le produit " + p.getName());
-                    trashProduits.add(p); //On l'ajoute donc dans la liste des produit non finissable
+                    trashProduits.add(p); //On l'ajoute donc dans la liste des produits non finissable
                     produits.remove(p);
                 }
                 else{
                     agentScores.put(p.getName(), agentsScore);
-                    //On regarde le robot qui est le plus apt a faire le produit
+                    //On regarde le robot qui est le plus apt à faire le produit
                     String sendAgent = "";
                     float maxScore = 0.0f;
                     for(String agent : agentsScore.keySet()){
@@ -134,7 +133,7 @@ public class atelier extends Agent {
                     this.a.send(message);
                 }
             }
-            else{ // Si il n'y a pas de produit à fabriquer, ou si l'atelier a déjà envoyé une demande
+            else{ // S'il n'y a pas de produit à fabriquer
                 if(finishedProduits.size() + trashProduits.size() == nbProduits){ // Si tous les produits ont été traités
                     System.out.println("Tous les produits ont été fabriqués");
                     System.out.println("Produits finis :");
@@ -181,7 +180,7 @@ public class atelier extends Agent {
                             sendAgent = agent;
                         }
                     }
-                    if(sendAgent != ""){
+                    if(!Objects.equals(sendAgent, "")){
                         //On envoie le message à l'agent
                         ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                         message.addReceiver(new AID(sendAgent, AID.ISLOCALNAME));
@@ -201,7 +200,7 @@ public class atelier extends Agent {
                     }
                 }
                 else if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL){ // Si le message est une acceptation
-                    produit p = null;
+                    produit p;
                     try {
                         p = (produit) msg.getContentObject();// On récupère le produit du message
                     } catch (UnreadableException e) {
@@ -212,7 +211,7 @@ public class atelier extends Agent {
                 }
                 else{ // Si le message est une fin de fabrication
                     System.out.println("Agent "+getAID().getName()+" received a message from "+msg.getSender().getName());
-                    //On récupère le produit contenue dans le message
+                    //On récupère le produit contenu dans le message
                     produit produit;
                     try {
                         produit = (produit) msg.getContentObject();
